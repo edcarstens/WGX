@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+  // CHAT BOX
+  //h2 Chat Box
+  #ChatBox
+  // div#wgxcontent(style='width: 880px; height: 220px; margin: 0 0 20px 0; border: solid 1px #999; overflow-y: scroll;')
+  fieldset
+    input#inputChatName(type='text', placeholder='Name')
+    input#inputMessage(type='text', placeholder='Message')
+    button#btnSend Send
+  div#wgxdata
+  div#wgxtop(style='position:absolute; width:900px; height:440px; top:300px; left:20px;')
+    div#wgxgfx(style='position:absolute; width:780px; height:440px; top:0px; left:20px')
+    button#btnPlay(style='position:absolute; width:100px; height:100px; top:0px; right:0px;') PLAY
+    button#btnWish(style='position:absolute; width:100px; height:100px; top:0px; right:0px;') WISH
+    button#btnOmen(style='position:absolute; width:100px; height:100px; top:0px; right:0px;') OMEN
+    button#btnBuy(style='position:absolute; width:100px; height:100px; top:120px; right:0px;') BUY
+    button#btnSell(style='position:absolute; width:100px; height:100px; top:230px; right:0px;') SELL
+    button#btnDonate(style='position:absolute; width:100px; height:100px; bottom:0px; right:0px') DONATE
+
