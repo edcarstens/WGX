@@ -11,6 +11,14 @@ cdata.trade = 0;
 cdata.tradeReady = false;
 cdata.secretId = 0;
 cdata.secretUp = true;
+cdata.secretTime = 10;
+
+// Hide the address bar on iphone safari
+window.addEventListener("load", function() {
+    setTimeout(function() {
+	window.scrollTo(0,0);
+    }, 0);
+});
 
 // Banner
 socket.on('banner', function (data) {
@@ -46,15 +54,15 @@ socket.on('xdata', function(data) {
     }
     cdata.price = data.price;
     cdata.priceReady = true;
-    html = '';
     c = earn%100;
     cs = c.toString()
     if (c < 10) {
 	cs = '0' + cs;
     }
-    html += '<b>FIB</b> $' + Math.floor(data.price/100) + ' earnings $' + Math.floor(earn/100) + '.' + cs;
-    $('#wgxdata').html(html);
-    
+    html = '<b><i>WGX</i> FIB</b> $' + Math.floor(data.price/100);
+    $('#wgxdata1').html(html);
+    html = '<b>Earnings:</b> $' + Math.floor(earn/100) + '.' + cs;
+    $('#wgxdata2').html(html);    
 });
 
 socket.on('trade', function(data) {
@@ -67,11 +75,32 @@ socket.on('trade', function(data) {
 socket.on('secret', function(data) {
     cdata.secretId = data.id;
     cdata.secretUp = data.up;
+    cdata.secretTime = 10;
     if (data.up) {
 	$('#btnWish').show();
     }
     else {
 	$('#btnOmen').show();
+    }
+});
+
+socket.on('secretTimer', function(data) {
+    cdata.secretTime = data.t;
+    if (cdata.secretUp) {
+	if (data.t == 0) {
+	    $('#btnWish').hide();
+	}
+	else {
+	    $('#btnWish').html('<b>WISH</b><br>' + data.t);
+	}
+    }
+    else {
+	if (data.t == 0) {
+	    $('#btnOmen').hide();
+	}
+	else {
+	    $('#btnOmen').html('<b>OMEN</b><br>' + data.t);
+	}
     }
 });
 
@@ -90,25 +119,12 @@ $('#btnSend').on('click', sendMessage = function() {
     var name = $("#inputChatName").val();
     //console.log('text = ', text);
     socket.emit('send', { message: text, username: name });
-    if (WGXLOOP.state === WGXLOOP.login) {
-	if (text == 'play') {
-	    WGXLOOP.player = name;
-	    WGXLOOP.updateInfo();
-	    WGXLOOP.state = WGXLOOP.play;
-	}
-	else if (text == 'test') {
-	    WGXLOOP.player = name;
-	    WGXLOOP.portfolio.cash = 100000;
-	    WGXLOOP.updateInfo();
-	    WGXLOOP.state = WGXLOOP.play;
-	}
-	else if (text == 'bot1') {
-	    WGXLOOP.player = 'bot1';
-	    WGXLOOP.portfolio.cash = 100000;
-	    WGXLOOP.updateInfo();
-	    WGXLOOP.state = WGXLOOP.play;
-	    //console.log('bot1 started');
-	}
+    if (text == 'bot1') {
+	WGXLOOP.player = 'bot1';
+	WGXLOOP.portfolio.cash = 100000;
+	WGXLOOP.updateInfo();
+	WGXLOOP.state = WGXLOOP.play;
+	//console.log('bot1 started');
     }
 });
 
@@ -136,6 +152,7 @@ $('#btnPlay').on('click', function() {
     $('#btnDonate').show();
     $('#btnOmen').hide();
     $('#btnWish').hide();
+    $('#wgxgfx').show();
 });
 
 $('#btnOmen').on('click', function() {
@@ -146,14 +163,40 @@ $('#btnWish').on('click', function() {
 }).hide();
 
 //Create a Pixi Application
-let width = 780;
-let height = 440;
-let pixiApp = new PIXI.Application({width: width, height: height});
+let width;
+let height;
+width = $('#wgxtop').width();
+height = $('#wgxtop').height();
+console.log('width=' + width + ' height=' + height)
+let dwidth = $(window).width();
+let dheight = $(window).height();
+width = dwidth;
+height = dheight;
 
+console.log('width=' + width + ' height=' + height)
+$('#debug').html('<h2>width=' + width + ' height=' + height)
+//if (width < 900) {
+//    width = width*2;
+//    height =height*2;
+//}
+//width = 1000;
+//height = 720;
+$('#wgxtop').width(width);
+$('#wgxtop').height(height);
+$('#inputChatName').css("left", width/2 - 200);
+$('#inputChatName').css("top", height/2 - 50);
+$('#btnPlay').css("left", width/2 - 45);
+$('#btnPlay').css("top", height/2 - 50 + 70);
+width = width - 150;
+height = height - 150;
+$('#inputMessage').width(width);
+let pixiApp = new PIXI.Application({width: width, height: height});
+//$('#inputMessage').width = width;
 //Add the canvas that Pixi automatically created for you to the HTML document
 //document.body.appendChild(pixiApp.view);
 //$('#wgxgfx').appendChild(pixiApp.view);
 let gfx = document.getElementById('wgxgfx');
+//let gfx = $('wgxgfx');
 //console.log(gfx);
 gfx.appendChild(pixiApp.view);
 WGXLOOP.init(pixiApp, width, height, priceHistory, socket, cdata);

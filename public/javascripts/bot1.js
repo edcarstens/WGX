@@ -1,7 +1,7 @@
 WGXLOOP.bot1 = function() {
-    let eh = WGXLOOP.earnHistory;
-    let ehlen = eh.length;
-    let nomPrice = eh[ehlen-1]*10;
+    let le = WGXLOOP.lastEarnings;
+    let earn = WGXLOOP.cdata.earn;
+    let nomPrice = earn*10;
     let maxPrice = nomPrice*2;
     let minPrice = nomPrice/2;
     if (minPrice < 1000) minPrice = 1000; // $10
@@ -11,7 +11,7 @@ WGXLOOP.bot1 = function() {
     let myPrice;
     let holdDelta = 200; // $2
     
-    if (eh[ehlen-2] < eh[ehlen-1]) { // earnings are increasing
+    if (le < earn) { // earnings are increasing
 	myPrice = (nomPrice + maxPrice)/2; // how I value FIB
     }
     else {

@@ -1,24 +1,26 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
-
+  //h1= title
+  //p Welcome to #{title}
   // CHAT BOX
   //h2 Chat Box
   #ChatBox
   // div#wgxcontent(style='width: 880px; height: 220px; margin: 0 0 20px 0; border: solid 1px #999; overflow-y: scroll;')
-  fieldset
-    input#inputChatName(type='text', placeholder='Name')
-    input#inputMessage(type='text', placeholder='Message')
-    button#btnSend Send
-  div#wgxdata
-  div#wgxtop(style='position:absolute; width:900px; height:440px; top:300px; left:20px;')
-    div#wgxgfx(style='position:absolute; width:780px; height:440px; top:0px; left:20px')
-    button#btnPlay(style='position:absolute; width:100px; height:100px; top:0px; right:0px;') PLAY
-    button#btnWish(style='position:absolute; width:100px; height:100px; top:0px; right:0px;') WISH
-    button#btnOmen(style='position:absolute; width:100px; height:100px; top:0px; right:0px;') OMEN
-    button#btnBuy(style='position:absolute; width:100px; height:100px; top:120px; right:0px;') BUY
-    button#btnSell(style='position:absolute; width:100px; height:100px; top:230px; right:0px;') SELL
-    button#btnDonate(style='position:absolute; width:100px; height:100px; bottom:0px; right:0px') DONATE
-
+  //fieldset
+    //input#inputChatName(class="w3-input w3-border w3-round-xxlarge w3-xlarge" type='text', placeholder='Nickname', style='width:400px')
+    //button#btnSend Send
+  div#wgxtop(class="w3-blue" style='position:absolute; width:1136px; height:470px; top:0px; left:0px;')
+    div#debug(class="w3-panel w3-xlarge" style='position:absolute; width:400px; bottom:60px; left:0px;') <b> Debug </b>
+    div#wgxdata1(class="w3-panel w3-blue w3-xlarge" style='position:absolute; width:50%; top:0px; left:0px;')
+    div#wgxdata2(class="w3-panel w3-blue w3-xlarge" style='position:absolute; width:50%; top:0px; right:60px;')
+    input#inputChatName(class="w3-input w3-border w3-round-xxlarge w3-xlarge" type='text', placeholder='Nickname', style='position:absolute; width:400px; top:200px; left:368px;')
+    div#wgxgfx(style='position:absolute; width:100%; height:100%; top:60px; left:20px')
+    button#btnPlay(class="w3-button w3-large w3-circle w3-green w3-hover-green w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:90px; top:270px; left:518px;') <b>PLAY</b>
+    button#btnWish(class="w3-button w3-large w3-circle w3-green w3-hover-green w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:90px; top:10px; right:15px;') <b>WISH</b><br>10
+    button#btnOmen(class="w3-button w3-large w3-circle w3-red w3-hover-red w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:90px; top:10px; right:15px;') <b>OMEN</b><br>10
+    button#btnBuy(class="w3-button w3-large w3-circle w3-green w3-hover-green w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:90px; top:110px; right:15px;') <b>BUY</b>
+    button#btnSell(class="w3-button w3-large w3-circle w3-red w3-hover-red w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:90px; top:210px; right:15px;') <b>SELL</b>
+    button#btnDonate(class="w3-button w3-large w3-circle w3-purple w3-hover-purple w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:90px; top:310px; right:15px') <b>GIVE</b>
+    input#inputMessage(class="w3-blue-grey w3-input w3-border w3-xlarge" type='text', placeholder='Message', style='position:absolute; width:996px; bottom:20px; left:20px;')
+    button#btnSend(class="w3-button w3-round-xlarge w3-blue-grey w3-hover-blue-grey w3-text-black w3-card-4 w3-ripple" style='position:absolute; width:90px; height:50px; bottom:20px; right:15px;') <b>SEND</b>

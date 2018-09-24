@@ -110,6 +110,17 @@ WGXLOOP.drawTrade = function(q, buy, sell) {
     WGXLOOP.earnScroll.draw(texture, anchorX, anchorY, WGXLOOP.mapy(ph[ph.length - 1]));
 };
 
+WGXLOOP.gotoLogin = function() {
+    WGXLOOP.state = WGXLOOP.login;
+    $('#btnPlay').show();
+    $('#btnBuy').hide();
+    $('#btnSell').hide();
+    $('#btnDonate').hide();
+    $('#btnWish').hide();
+    $('#btnOmen').hide();
+    $('#wgxgfx').hide();
+};
+
 WGXLOOP.process = function(price) {
     WGXLOOP.currentPrice = price;
     let net = WGXLOOP.portfolio.netEquity('FIB', price);
@@ -119,13 +130,7 @@ WGXLOOP.process = function(price) {
 	WGXLOOP.socket.emit('leader', {value:0, player:WGXLOOP.player});
 	WGXLOOP.initVars();
 	WGXLOOP.info.text = 'GAME OVER\n\n' + WGXLOOP.info.text;
-	WGXLOOP.state = WGXLOOP.login;
-	$('#btnPlay').show();
-	$('#btnBuy').hide();
-	$('#btnSell').hide();
-	$('#btnDonate').hide();
-	$('#btnWish').hide();
-	$('#btnOmen').hide();
+	WGXLOOP.gotoLogin();
 	return;
     }
     let q = WGXLOOP.q;
@@ -279,7 +284,7 @@ WGXLOOP.updateInfo = function() {
     //let l = WGXLOOP.cash2string(WGXLOOP.portfolio.loans);
     let net = WGXLOOP.cash2string(WGXLOOP.portfolio.netEquity('FIB', WGXLOOP.currentPrice));
     let leaders = WGXLOOP.leaders;
-    WGXLOOP.info.text = WGXLOOP.player + ' Gifts:' + d + ' NW:' + net + '\n Cash:' + c + s; // + ' Margin:' + m + ' Loans:' + l;
+    WGXLOOP.info.text = WGXLOOP.player + '\nGifts:' + d + ' NW:' + net + '\n Cash:' + c + s; // + ' Margin:' + m + ' Loans:' + l;
     WGXLOOP.textLB.text = leaders;
 };
 
@@ -405,7 +410,8 @@ WGXLOOP.start = function() {
     WGXLOOP.line = new PIXI.Graphics(); // stock price
     //WGXLOOP.earnPlot = new PIXI.Graphics();  // earnings plot
     WGXLOOP.earnScroll = new Scroll(WGXLOOP.app.stage, WGXLOOP.swidth + 20, WGXLOOP.sheight >> 1, 20);
-    WGXLOOP.infoBanner = new Banner(WGXLOOP.app.stage, WGXLOOP.sheight - 34, 74, 12, 20);
+    //WGXLOOP.infoBanner = new Banner(WGXLOOP.app.stage, WGXLOOP.sheight - 34, 74, 12, 20);
+    WGXLOOP.infoBanner = new Banner(WGXLOOP.app.stage, WGXLOOP.sheight - 34, WGXLOOP.swidth/12, 12, 20);
     WGXLOOP.tradesPlot = new PIXI.Graphics(); // trades plot
     WGXLOOP.buyArrow = new PIXI.Texture.fromImage('../images/buyArrow.png')
     WGXLOOP.sellArrow = new PIXI.Texture.fromImage('../images/sellArrow.png')
@@ -425,7 +431,19 @@ WGXLOOP.start = function() {
 	dropShadowAngle: Math.PI / 6,
 	dropShadowDistance: 6,
     });
-    WGXLOOP.info = new PIXI.Text('Click "Play" to start game',style);
+    let style2 = new PIXI.TextStyle({
+	fontFamily: "Arial",
+	fontSize: 24,
+	fill: "white",
+	stroke: '#000044',
+	strokeThickness: 3,
+	dropShadow: true,
+	dropShadowColor: "#000000",
+	dropShadowBlur: 4,
+	dropShadowAngle: Math.PI / 6,
+	dropShadowDistance: 6,
+    });
+    WGXLOOP.info = new PIXI.Text('Click "Play" to start game',style2);
     WGXLOOP.textLB = new PIXI.Text('Top Givers',style);
     WGXLOOP.portfolio = new Portfolio(2000); // $20
     //WGXLOOP.portfolio = new Portfolio(200000); // $2000
@@ -436,6 +454,7 @@ WGXLOOP.start = function() {
     WGXLOOP.app.stage.addChild(WGXLOOP.line);
     //WGXLOOP.app.stage.addChild(WGXLOOP.earnPlot);
     WGXLOOP.app.stage.addChild(WGXLOOP.tradesPlot);
-    WGXLOOP.state = WGXLOOP.login;
+    //WGXLOOP.state = WGXLOOP.login;
+    WGXLOOP.gotoLogin();
     WGXLOOP.app.ticker.add(delta => WGXLOOP.state(delta));
 };

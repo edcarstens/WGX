@@ -2,11 +2,12 @@ const { Observable, interval } = require('rxjs');
 var Seq = require('./Seq.js');
 var Horse = require('./Horse.js');
 var Stock = require('./Stock.js');
+var chatEn = false;
 
 let WGX = {
     io: null, // set this to IO socket
     updateTime: 200, // ms
-    LB: [{player:'test', val:0}],
+    LB: [{player:'<nobody>', val:0}],
     LBN: 3,
     LBV: 0,
     secretId: 0,
@@ -69,6 +70,7 @@ WGX.next = function(i) {
 	    }
 	    else {
 		WGX.secretTimeout--;
+		WGX.sdata.socket.emit('secretTimer', {t: WGX.secretTimeout});
 	    }
 	}
     }
@@ -159,6 +161,16 @@ WGX.start = function() {
 	socket.on('send', function(data) {
 	    //io.sockets.emit('message', data);
 	    if ((data.username == WGX.LB[0].player) && (data.message.length <= 60)) {
+		io.sockets.emit('banner', data);
+		if (data.message == 'chat=1') {
+		    chatEn = true;
+		}
+		else if (data.message == 'chat=0') {
+		    chatEn = false;
+		}
+	    }
+	    else if (chatEn) {
+		data.message += ' -' + data.username;
 		io.sockets.emit('banner', data);
 	    }
 	});
