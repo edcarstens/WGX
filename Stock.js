@@ -8,7 +8,8 @@ Stock = function(name, initEarn, earnLoB, earnUpB, nextEarnDelta) {
     this.price = this.pe*this.earn;
     this.priceVel = 0;
     this.earnDeltas = [];
-    this.uben = false; // upper bound enable
+    this.ben = false; // tight bound enable
+    this.uben = false; // upper tight bound enable
     this.pvBound = 200;
     this.pvFrictionBound = 15;
     this.pvFrictionBound2 = 50;
@@ -67,17 +68,32 @@ Stock.prototype.pvCheckBound = function() {
 
 // next price
 Stock.prototype.nextPrice = function() {
+    let tlo;
+    let thi;
     if (this.earnDeltas.length > 1) {
 	if ((this.earnDeltas[0] > 0) && (this.earnDeltas[1] > 0)) {
-	    this.uben = false; // enable lower bound on price
+	    this.uben = false; // enable tight lower bound on price
+	    this.ben = true; // enable tight bound on price
 	}
 	else if ((this.earnDeltas[0] < 0) && (this.earnDeltas[1] < 0)) {
-	    this.uben = true; // enable upper bound on price
+	    this.uben = true; // enable tight upper bound on price
+	    this.ben = true;
+	}
+	else {
+	    this.ben = false; // disable tight bounds on price
 	}
 	let pr = this.price + this.rDelta;
 	let np = this.pe*this.earn;
-	let tlo = this.uben ? (np >> 1) : (np - 1000);
-	let thi = this.uben ? (np + 1000) : (np << 1);
+	tlo = np >> 1; // loose bound (half)
+	thi = np << 1; // loose bound (double)
+	if (this.ben) {
+	    if (this.uben) {
+		thi = np + 500; // tight upper bound
+	    }
+	    else {
+		tlo = np - 500; // tight lower bound
+	    }
+	}
 	if (pr > thi) {
 	    this.priceVel -= this.mQ;
 	}
@@ -86,7 +102,7 @@ Stock.prototype.nextPrice = function() {
 	}
 
 	// Random changes in direction
-	if (Math.random() < 0.01) {
+	if (Math.random() < 0.005) {
 	    if (this.priceVel > 0) {
 		this.priceVel = -this.mQ;
 	    }

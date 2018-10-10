@@ -7,7 +7,9 @@ var chatEn = false;
 let WGX = {
     io: null, // set this to IO socket
     updateTime: 200, // ms
-    LB: [{player:'<nobody>', val:0}],
+    LB: [{player:'nobody', val:0},
+	 {player:'nobody', val:0},
+	 {player:'nobody', val:0}],
     LBN: 3,
     LBV: 0,
     secretId: 0,
@@ -118,6 +120,7 @@ WGX.start = function() {
     //let LBN = 3; // keep up with top 3 players
     //let LBV = 0; // leader board last place value
     //let LBP = '';
+    this.connections = new Map();
     io = this.io;
     this.FIB.nextEarnDelta = function() {
 	return ((WGX.secretDelta != 0) ? WGX.secretDelta : WGX.seq.nextItemRpt());
@@ -129,6 +132,12 @@ WGX.start = function() {
     interval(this.updateTime).subscribe(this);
     // DO NOT use 'this' keyword in callback functions!
     io.on('connection', function(socket) {
+	WGX.connections.set(socket, socket);
+	console.log('Connections = ' + WGX.connections.size)
+	socket.once('disconnect', function() {
+	    WGX.connections.delete(socket);
+	    console.log('Connections = ' + WGX.connections.size)
+	});
 	socket.emit('leaders', WGX.LB);
 	//socket.emit('banner', { message: 'Welcome to the WGX' });
 	socket.on('trade', function(data) {
@@ -137,7 +146,12 @@ WGX.start = function() {
 	    if (data.username == WGX.LB[0].player) {
 		io.sockets.emit('trade', data);
 	    }
-	    if ((data.q < 100) && (! WGX.sdata.socketReady)) {
+	    //if ((data.q < 100) && (! WGX.sdata.socketReady)) {
+	    if ((! WGX.sdata.socketReady) &&
+		(data.username != WGX.LB[0].player) &&
+		((data.username != WGX.LB[1].player) || (WGX.connections.size == 2)) &&
+		((data.username != WGX.LB[2].player) || (WGX.connections.size == 3))
+	       ) {
 		WGX.sdata.socket = socket;
 		WGX.sdata.socketReady = true;
 		//console.log('picked a client socket for the secret');
