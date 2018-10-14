@@ -47,6 +47,19 @@ Scroll.prototype.draw = function(texture, anchorX, anchorY, y) {
     }
 };
 
+Scroll.prototype.clear = function() {
+    this.panel[0].clear();
+    this.panel[1].clear();
+    this.panel[0].x = 0;
+    this.panel[0].y = this.panelY;
+    this.panel[1].x = this.panelWidth - this.panelOverlap;
+    this.panel[1].y = this.panelY;
+    this.panelIdx = 1;
+    this.childIdx = 0; // child index for current panel
+    this.x = 0; // x coord for new items drawn on current panel
+    this.y = 0; // y coord for new items drawn on current panel
+};
+
 // TODO - add capability to scroll either way
 Scroll.prototype.step = function(dx, dy) {
     let child;

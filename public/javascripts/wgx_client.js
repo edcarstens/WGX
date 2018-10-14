@@ -6,6 +6,8 @@ var cdata = {};
 cdata.price = 0;
 cdata.priceReady = false;
 cdata.earn = 0;
+cdata.earnCount = 0;
+cdata.earnDelta = 0;
 cdata.earnReady = false;
 cdata.trade = 0;
 cdata.tradeReady = false;
@@ -50,6 +52,8 @@ socket.on('xdata', function(data) {
     if (data.earn) {
 	earn = data.earn; // save earnings
 	cdata.earn = data.earn;
+	cdata.earnCount = data.earnCount;
+	cdata.earnDelta = data.earnDelta;
 	cdata.earnReady = true;
     }
     cdata.price = data.price;

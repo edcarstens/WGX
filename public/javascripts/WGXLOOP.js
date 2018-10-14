@@ -74,11 +74,12 @@ WGXLOOP.mapy = function(y, iscp) {
     return rv;
 };
 
-WGXLOOP.drawEarn = function(evalue) {
+WGXLOOP.drawEarn = function(evalue, eDelta) {
     let texture;
     let anchorX;
     let anchorY;
-    if (evalue > WGXLOOP.lastEarn) {
+    //if (evalue > WGXLOOP.lastEarn) {
+    if (eDelta > 0) {
 	texture = WGXLOOP.buyArrow;
 	anchorX = 0.5;
 	anchorY = 1;
@@ -177,7 +178,7 @@ WGXLOOP.drawPrice = function() {
     WGXLOOP.earnScroll.step(2,0);
     
     line.clear();
-    trades.clear();
+    //trades.clear();
     if (phlen > 0) {
 	let priceY;
 	line.x = WGXLOOP.swidth - (phlen << 1)
@@ -205,7 +206,19 @@ WGXLOOP.drawPrice = function() {
 
 WGXLOOP.play = function(delta) {
     if (WGXLOOP.cdata.earnReady) {
-	WGXLOOP.drawEarn(WGXLOOP.cdata.earn);
+	// Check continuity with server using earnCount
+	if ((WGXLOOP.lastEarnCount > 0) && (WGXLOOP.cdata.earnCount > WGXLOOP.lastEarnCount + 1)) {
+	    // Clear all graphics/data
+	    //WGXLOOP.line.clear();
+	    WGXLOOP.priceHistory = [];
+	    WGXLOOP.lastTrade = 0;
+	    WGXLOOP.cdata.priceReady = false;
+	    WGXLOOP.cdata.tradeReady = false;
+	    WGXLOOP.earnScroll.clear();
+	    WGXLOOP.tradesPlot.clear();
+	}
+	WGXLOOP.lastEarnCount = WGXLOOP.cdata.earnCount;
+	WGXLOOP.drawEarn(WGXLOOP.cdata.earn, WGXLOOP.cdata.earnDelta);
 	WGXLOOP.cdata.earnReady = false;
     }
     else if (WGXLOOP.cdata.priceReady) {

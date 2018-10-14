@@ -1,6 +1,5 @@
-// 1 Fix 1st earnings after initial connect
-// 2 Remove disconnected player from leaderboard
-// 3 Add Ka-Ching! popup when cash increases significantly from trade
+// 1 Remove disconnected player from leaderboard
+// 2 Add Ka-Ching! popup when cash increases significantly from trade
 
 const { Observable, interval } = require('rxjs');
 var Seq = require('./Seq.js');
@@ -21,6 +20,7 @@ let WGX = {
     secretDelta: 0,
     secretCount: 0,
     secretTimeout: 0,
+    earnCount: 0,
     sdata: {socket: null, socketReady: false, secretReady: true}
 };
 
@@ -55,7 +55,9 @@ WGX.next = function(i) {
     }
     if (i % 32 == 0) {
 	earn = this.FIB.nextEarn();
-	this.io.sockets.emit('xdata', {earn:earn, price:price});
+	WGX.earnCount++;
+	earnDelta = this.FIB.earnDeltas[0];
+	this.io.sockets.emit('xdata', {earn:earn, earnCount:WGX.earnCount, earnDelta:earnDelta, price:price});
 	if (WGX.secretCount > 0) {
 	    WGX.secretCount--;
 	}
