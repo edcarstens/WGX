@@ -1,5 +1,7 @@
-// 1 Remove disconnected player from leaderboard
-// 2 Add Ka-Ching! popup when cash increases significantly from trade
+// TODO
+// Add Ka-Ching! popup when cash increases significantly from trade
+//  (1) add a meanPrice/share metric used to calculate profit -- DONE
+//  (2) add popup when profit exceeds some threshold
 
 const { Observable, interval } = require('rxjs');
 var Seq = require('./Seq.js');
@@ -10,9 +12,9 @@ var chatEn = false;
 let WGX = {
     io: null, // set this to IO socket
     updateTime: 200, // ms
-    LB: [{player:'nobody', val:0},
-	 {player:'nobody', val:0},
-	 {player:'nobody', val:0}],
+    LB: [{socket:null, player:'nobody', val:0},
+	 {socket:null, player:'nobody', val:0},
+	 {socket:null, player:'nobody', val:0}],
     LBN: 3,
     LBV: 0,
     secretId: 0,
@@ -103,28 +105,42 @@ WGX.next = function(i) {
 WGX.error = function(err) { console.log(err);};
 WGX.complete = function() {};
 
-WGX.insertLB = function(data) {
+WGX.insertLB = function(s, data) {
     let p = data.player;
     let v = data.value;
     let i = 0;
     while ((i < this.LB.length) && (v <= this.LB[i].val)) {
 	i++;
     }
-    this.LB.splice(i, 0, {player:p, val:v});
+    this.LB.splice(i, 0, {socket:s, player:p, val:v});
     if (this.LB.length > this.LBN) {
 	this.LB.splice(this.LBN, this.LB.length - this.LBN);
 	this.LBV = this.LB[this.LB.length - 1].val;
     }
 };
 
-WGX.removeLB = function(p) {
+WGX.removeLB = function(s) {
     let i = 0;
-    while ((i < this.LB.length) && (p != this.LB[i].player)) {
+    while ((i < this.LB.length) && (s !== this.LB[i].socket)) {
 	i++;
     }
     if (i < this.LB.length) {
 	this.LB.splice(i, 1); // remove existing player position
     }
+};
+
+WGX.leaderBoardMinusSockets = function() {
+    let i = 0;
+    let rv = [];
+    let p;
+    let v;
+    while (i < this.LB.length) {
+	p = this.LB[i].player;
+	v = this.LB[i].val;
+	rv.push({player:p, val:v});
+	i++;
+    }
+    return rv;
 };
 
 WGX.start = function() {
@@ -151,10 +167,12 @@ WGX.start = function() {
 	WGX.connections.set(socket, socket);
 	console.log('Connections = ' + WGX.connections.size)
 	socket.once('disconnect', function() {
+	    WGX.removeLB(socket);
 	    WGX.connections.delete(socket);
-	    console.log('Connections = ' + WGX.connections.size)
+	    //console.log('Connections = ' + WGX.connections.size)
 	});
-	socket.emit('leaders', WGX.LB);
+	//socket.emit('leaders', WGX.LB);
+	socket.emit('leaders',  WGX.leaderBoardMinusSockets());
 	//socket.emit('banner', { message: 'Welcome to the WGX' });
 	socket.on('trade', function(data) {
 	    //console.log('trade: ' + data.q);
@@ -206,13 +224,17 @@ WGX.start = function() {
 	});
 	socket.on('leader', function(data) {
 	    if (data.value == 0) {
-		WGX.removeLB(data.player);
+		//WGX.removeLB(data.player);
+		WGX.removeLB(socket);
 	    }
 	    else if (data.value > WGX.LBV) {
-		WGX.removeLB(data.player);
-		WGX.insertLB(data);
+		//WGX.removeLB(data.player);
+		WGX.removeLB(socket);
+		WGX.insertLB(socket, data);
 	    }
-	    io.sockets.emit('leaders', WGX.LB);
+	    //io.sockets.emit('leaders', WGX.LB);
+	    // leave out the sockets in WGX.LB
+	    io.sockets.emit('leaders', WGX.leaderBoardMinusSockets());
 	});
     });
 };

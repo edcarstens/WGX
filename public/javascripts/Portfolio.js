@@ -1,9 +1,11 @@
 Portfolio = function(cash) {
     this.cash = cash;
     this.shares = {};
-    this.loans = 0;
+    this.loans = {};
     this.margin = 0;
     this.leverage = 10; // 10x leverage allows for a loan up to 10*cash
+    this.profit = 0;
+    this.meanPrice = {};
 };
 
 Portfolio.prototype.constructor = Portfolio;
@@ -13,6 +15,26 @@ Portfolio.prototype.initStock = function(stock) {
 	this.shares[stock] = 0;
     if (this.loans[stock] === undefined)
 	this.loans[stock] = 0;
+    if (this.meanPrice[stock] === undefined)
+	this.meanPrice[stock] = 0;
+};
+
+Portfolio.prototype.shareCost = function(q, stock, price) {
+    // keep up with average stock price
+    let qq = this.shares[stock];
+    if (((qq >= 0) && (q > 0)) || ((qq <= 0) && (q < 0))) {
+	this.meanPrice[stock] = (this.meanPrice[stock]*qq + price*q)/(qq + q);
+	this.profit = 0;
+	//console.log('mean price = ' + this.meanPrice[stock]);
+    }
+    else if ((qq > 0) && (q < 0)) { // closing long position
+	this.profit = price - this.meanPrice[stock];
+	//console.log('profit/share = ' + this.profit);
+    }
+    else { // closing short position
+	this.profit = this.meanPrice[stock] - price;
+	//console.log('profit/share = ' + this.profit);
+    }
 };
 
 Portfolio.prototype.simpleTrade = function(q, stock, price, mq) {
@@ -25,6 +47,7 @@ Portfolio.prototype.simpleTrade = function(q, stock, price, mq) {
     if ((q < 0) && (myq < -q)) {
 	return false;
     }
+    this.shareCost(q, stock, price);
     // execute the trade
     this.shares[stock] += q;
     //this.cash -= q*price;
