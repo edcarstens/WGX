@@ -67,15 +67,16 @@ Stock.prototype.pvCheckBound = function() {
 };
 
 // next price
-Stock.prototype.nextPrice = function() {
+Stock.prototype.nextPrice = function(secretEarnDelta) {
     let tlo;
     let thi;
+    secretEarnDelta = secretEarnDelta || 0;
     if (this.earnDeltas.length > 1) {
-	if ((this.earnDeltas[0] > 0) && (this.earnDeltas[1] > 0)) {
+	if (((this.earnDeltas[0] > 0) && (this.earnDeltas[1] > 0)) || (secretEarnDelta > 0)) {
 	    this.uben = false; // enable tight lower bound on price
 	    this.ben = true; // enable tight bound on price
 	}
-	else if ((this.earnDeltas[0] < 0) && (this.earnDeltas[1] < 0)) {
+	else if (((this.earnDeltas[0] < 0) && (this.earnDeltas[1] < 0)) || (secretEarnDelta < 0)) {
 	    this.uben = true; // enable tight upper bound on price
 	    this.ben = true;
 	}
@@ -83,7 +84,7 @@ Stock.prototype.nextPrice = function() {
 	    this.ben = false; // disable tight bounds on price
 	}
 	let pr = this.price + this.rDelta;
-	let np = this.pe*this.earn;
+	let np = this.pe*(this.earn + secretEarnDelta);
 	tlo = np >> 1; // loose bound (half)
 	thi = np << 1; // loose bound (double)
 	if (this.ben) {

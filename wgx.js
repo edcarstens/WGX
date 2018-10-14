@@ -1,3 +1,7 @@
+// 1 Fix 1st earnings after initial connect
+// 2 Remove disconnected player from leaderboard
+// 3 Add Ka-Ching! popup when cash increases significantly from trade
+
 const { Observable, interval } = require('rxjs');
 var Seq = require('./Seq.js');
 var Horse = require('./Horse.js');
@@ -38,7 +42,17 @@ WGX.init = function(io) {
 WGX.next = function(i) {
     let earn;
     let price;
-    price = this.FIB.nextPrice();
+    if ((WGX.sdata.secretCount > 0) || (WGX.secretCount > 0)) {
+	if (WGX.secretUp) {
+	    price = this.FIB.nextPrice(100*WGX.secretCount);
+	}
+	else {
+	    price = this.FIB.nextPrice(-100*WGX.secretCount);
+	}
+    }
+    else {
+	price = this.FIB.nextPrice();
+    }
     if (i % 32 == 0) {
 	earn = this.FIB.nextEarn();
 	this.io.sockets.emit('xdata', {earn:earn, price:price});
