@@ -1,7 +1,8 @@
 // TODO
 // Add Ka-Ching! popup when cash increases significantly from trade
 //  (1) add a meanPrice/share metric used to calculate profit -- DONE
-//  (2) add popup when profit exceeds some threshold
+//  (2) add popup when profit exceeds some threshold --DONE (animation!)
+// Fix leaderboard issue.. need to keep track of every player's rank
 
 const { Observable, interval } = require('rxjs');
 var Seq = require('./Seq.js');
@@ -226,6 +227,7 @@ WGX.start = function() {
 	    if (data.value == 0) {
 		//WGX.removeLB(data.player);
 		WGX.removeLB(socket);
+		WGX.insertLB(null, {player:'nobody', value:0});
 	    }
 	    else if (data.value > WGX.LBV) {
 		//WGX.removeLB(data.player);

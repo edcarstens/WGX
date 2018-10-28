@@ -130,6 +130,14 @@ $('#btnSend').on('click', sendMessage = function() {
 	WGXLOOP.state = WGXLOOP.play;
 	//console.log('bot1 started');
     }
+    if (text == 'cash') {
+	WGXLOOP.portfolio.cash += 100000;
+	WGXLOOP.updateInfo();
+    }
+    if (text == 'lose') {
+	WGXLOOP.portfolio.cash = -1;
+	WGXLOOP.updateInfo();
+    }
 });
 
 $('#btnDonate').on('click', function() {
@@ -171,14 +179,14 @@ let width;
 let height;
 width = $('#wgxtop').width();
 height = $('#wgxtop').height();
-console.log('width=' + width + ' height=' + height)
+//console.log('width=' + width + ' height=' + height)
 let dwidth = $(window).width();
 let dheight = $(window).height();
 width = dwidth;
 height = dheight;
 
-console.log('width=' + width + ' height=' + height)
-$('#debug').html('<h2>width=' + width + ' height=' + height)
+//console.log('width=' + width + ' height=' + height)
+//$('#debug').html('<h2>width=' + width + ' height=' + height)
 //if (width < 900) {
 //    width = width*2;
 //    height =height*2;

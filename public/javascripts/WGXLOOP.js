@@ -114,12 +114,19 @@ WGXLOOP.drawTrade = function(q, buy, sell) {
 WGXLOOP.gotoLogin = function() {
     WGXLOOP.state = WGXLOOP.login;
     $('#btnPlay').show();
+    $('#inputChatName').show();
     $('#btnBuy').hide();
     $('#btnSell').hide();
     $('#btnDonate').hide();
     $('#btnWish').hide();
     $('#btnOmen').hide();
     $('#wgxgfx').hide();
+};
+
+WGXLOOP.gameover = function() {
+    if (WGXLOOP.gameoverAnimation.step(1)) {
+	WGXLOOP.gotoLogin();
+    }
 };
 
 WGXLOOP.process = function(price) {
@@ -130,8 +137,10 @@ WGXLOOP.process = function(price) {
 	// Game Over
 	WGXLOOP.socket.emit('leader', {value:0, player:WGXLOOP.player});
 	WGXLOOP.initVars();
-	WGXLOOP.info.text = 'GAME OVER\n\n' + WGXLOOP.info.text;
-	WGXLOOP.gotoLogin();
+	//WGXLOOP.info.text = 'GAME OVER\n\n' + WGXLOOP.info.text;
+	WGXLOOP.state = WGXLOOP.gameover;
+	WGXLOOP.gameoverAnimation.init();
+	//WGXLOOP.gotoLogin();
 	return;
     }
     let q = WGXLOOP.q;
@@ -258,6 +267,12 @@ WGXLOOP.play = function(delta) {
     }
 */
     WGXLOOP.infoBanner.step(1);
+    WGXLOOP.kaching.step(1);
+    //if (WGXLOOP.goldcoin.alpha > 0) {
+//	WGXLOOP.goldcoin.alpha -= 0.005;
+//	WGXLOOP.goldcoin.y += 4;
+//	WGXLOOP.goldcoin.x -= 4;
+//    }
 };
 
 WGXLOOP.drawButton = function(g,x,y,c,s,sx,style,h) {
@@ -301,6 +316,29 @@ WGXLOOP.updateInfo = function() {
     WGXLOOP.textLB.text = leaders;
 };
 
+WGXLOOP.doKaching = function(profit) {
+    if (profit > 1000) {
+	WGXLOOP.infoBanner.send('KA-CHING!!!');
+	WGXLOOP.kaching.init();
+	//WGXLOOP.goldcoin.alpha = 1;
+	//WGXLOOP.goldcoin.x = WGXLOOP.swidth;
+	//WGXLOOP.goldcoin.y = 0;
+    }
+};
+
+WGXLOOP.executeTrade = function() {
+    if (WGXLOOP.portfolio.trade(WGXLOOP.tradesQ, "FIB", WGXLOOP.currentPrice)) {
+	WGXLOOP.socket.emit("trade", {q:WGXLOOP.tradesQ, username:WGXLOOP.player});
+	WGXLOOP.lastTrade = WGXLOOP.tradesQ;
+	WGXLOOP.trades--;
+	WGXLOOP.updateInfo();
+	WGXLOOP.doKaching(WGXLOOP.portfolio.profit);
+    }
+    else {
+	WGXLOOP.trades = 0;
+    }
+};
+
 WGXLOOP.buy = function() {
     if (WGXLOOP.trades == 0) {
 	WGXLOOP.tradesQ = WGXLOOP.q;
@@ -309,15 +347,7 @@ WGXLOOP.buy = function() {
 	    WGXLOOP.trades = WGXLOOP.q/100; // series of smaller trades
 	    WGXLOOP.tradesQ = 100;
 	}
-	if (WGXLOOP.portfolio.trade(WGXLOOP.tradesQ, "FIB", WGXLOOP.currentPrice)) {
-	    WGXLOOP.socket.emit("trade", {q:WGXLOOP.tradesQ, username:WGXLOOP.player});
-	    WGXLOOP.lastTrade = WGXLOOP.tradesQ;
-	    WGXLOOP.trades--;
-	    WGXLOOP.updateInfo();
-	}
-	else {
-	    WGXLOOP.trades = 0;
-	}
+	WGXLOOP.executeTrade();
     }
 };
 
@@ -329,15 +359,7 @@ WGXLOOP.sell = function() {
 	    WGXLOOP.trades = WGXLOOP.q/100; // series of smaller trades
 	    WGXLOOP.tradesQ = -100;
 	}
-	if (WGXLOOP.portfolio.trade(WGXLOOP.tradesQ, "FIB", WGXLOOP.currentPrice)) {
-	    WGXLOOP.socket.emit("trade", {q:WGXLOOP.tradesQ, username:WGXLOOP.player});
-	    WGXLOOP.lastTrade = WGXLOOP.tradesQ;
-	    WGXLOOP.trades--;
-	    WGXLOOP.updateInfo();
-	}
-	else {
-	    WGXLOOP.trades = 0;
-	}
+	WGXLOOP.executeTrade();
     }
 };
 
@@ -409,10 +431,12 @@ WGXLOOP.login = function(delta) {
 };
 
 WGXLOOP.initVars = function() {
-    WGXLOOP.info.text = 'Enter your name in ChatName box, then click "Play"';
+    //WGXLOOP.info.text = 'Enter your name in ChatName box, then click "Play"';
+    //WGXLOOP.info.text = '';
     WGXLOOP.info.x = 10;
     WGXLOOP.info.y = 80;
-    WGXLOOP.portfolio.cash = 500000;
+    //WGXLOOP.portfolio.cash = 500000;
+    WGXLOOP.portfolio.cash = 2000;
     WGXLOOP.portfolio.shares.FIB = 0;
     WGXLOOP.portfolio.margin = 0;
     WGXLOOP.portfolio.loans = 0;
@@ -426,12 +450,15 @@ WGXLOOP.start = function() {
     //WGXLOOP.infoBanner = new Banner(WGXLOOP.app.stage, WGXLOOP.sheight - 34, 74, 12, 20);
     WGXLOOP.infoBanner = new Banner(WGXLOOP.app.stage, WGXLOOP.sheight - 34, WGXLOOP.swidth/12, 12, 20);
     WGXLOOP.tradesPlot = new PIXI.Graphics(); // trades plot
-    WGXLOOP.buyArrow = new PIXI.Texture.fromImage('../images/buyArrow.png')
-    WGXLOOP.sellArrow = new PIXI.Texture.fromImage('../images/sellArrow.png')
-    WGXLOOP.buyTriangle = new PIXI.Texture.fromImage('../images/buyTriangle.png')
-    WGXLOOP.sellTriangle = new PIXI.Texture.fromImage('../images/sellTriangle.png')
-    WGXLOOP.buyTriangle1 = new PIXI.Texture.fromImage('../images/buyTriangle1.png')
-    WGXLOOP.sellTriangle1 = new PIXI.Texture.fromImage('../images/sellTriangle1.png')
+    WGXLOOP.buyArrow = new PIXI.Texture.fromImage('../images/buyArrow.png');
+    WGXLOOP.sellArrow = new PIXI.Texture.fromImage('../images/sellArrow.png');
+    WGXLOOP.buyTriangle = new PIXI.Texture.fromImage('../images/buyTriangle.png');
+    WGXLOOP.sellTriangle = new PIXI.Texture.fromImage('../images/sellTriangle.png');
+    WGXLOOP.buyTriangle1 = new PIXI.Texture.fromImage('../images/buyTriangle1.png');
+    WGXLOOP.sellTriangle1 = new PIXI.Texture.fromImage('../images/sellTriangle1.png');
+    WGXLOOP.coin = new PIXI.Texture.fromImage('../images/goldcoin.jpg');
+    WGXLOOP.kaching = new Kaching(WGXLOOP.app.stage, WGXLOOP.coin, WGXLOOP.swidth, WGXLOOP.sheight, 10);
+    WGXLOOP.gameoverAnimation = new Gameover(WGXLOOP.app);
     let style = new PIXI.TextStyle({
 	fontFamily: "Arial",
 	fontSize: 16,
