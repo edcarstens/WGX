@@ -1,8 +1,6 @@
 // TODO
-// Add Ka-Ching! popup when cash increases significantly from trade
-//  (1) add a meanPrice/share metric used to calculate profit -- DONE
-//  (2) add popup when profit exceeds some threshold --DONE (animation!)
 // Fix leaderboard issue.. need to keep track of every player's rank
+// Fix first earnings arrow bug
 
 const { Observable, interval } = require('rxjs');
 var Seq = require('./Seq.js');
@@ -24,7 +22,22 @@ let WGX = {
     secretCount: 0,
     secretTimeout: 0,
     earnCount: 0,
-    sdata: {socket: null, socketReady: false, secretReady: true}
+    sdata: {socket: null, socketReady: false, secretReady: true},
+    bannerStall: false,
+    secretUpMsg: ['FIB wins contract with Universal Industries',
+		  'FIB a likely takeover target',
+		  'FIB wins patent infringement case',
+		 'FIB issues extremely positive guidance'],
+    secretDnMsg: ['Class action lawsuit filed against FIB',
+		  'Large asteroid on collision course with Earth',
+		  'FIB CFO and CEO under SEC investigation',
+		 'FIB issue extremely negative guidance'],
+    scriptureVerse: ['For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life',
+		     'All have sinned and fall short of the glory of God',
+		     'The Lord himself will give you a sign: The virgin will conceive and give birth to a son, and will call him Immanuel',
+		     'He was despised and rejected by mankind, a man of suffering, and familiar with pain',
+		     'For the love of money is a root of all kinds of evil',
+		     'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God']
 };
 
 WGX.init = function(io) {
@@ -40,6 +53,10 @@ WGX.init = function(io) {
     this.sp1u = new Seq([50,70,100,150,200,70], 'sp1u', 0);
     this.sp1d = new Seq([-50,-70,-100,-150,-200,-70], 'sp1d', 0);
     this.seqpop = new Horse([this.sp1u,this.sp1d], [3,3], 'sp', 0);
+    // Random seq
+    this.seq2u = new Seq([40], 'seq2u', 50);
+    this.seq2d = new Seq([-40], 'seq2d', 50);
+    this.seq2 = new Horse([this.seq2u,this.seq2d], [7,7], 'seq2', 5);
 };
 
 WGX.next = function(i) {
@@ -98,8 +115,18 @@ WGX.next = function(i) {
     else {
 	this.io.sockets.emit('xdata', {price:price});
     }
-    if (i % 64 == 16) {
-	this.io.sockets.emit('banner', { message: 'Buy FIB!' });
+    if (i % 32 == 16) {
+	if (Math.random() < 0.1) {
+	    let x = Math.floor(Math.random() * WGX.scriptureVerse.length);
+	    this.io.sockets.emit('banner', { message: WGX.scriptureVerse[x] });
+	    WGX.bannerStall = true;
+	}
+	else if (WGX.bannerStall) {
+	    WGX.bannerStall = false;
+	}
+	else {
+	    this.io.sockets.emit('banner', { message: 'FIB $' + Math.floor(WGX.FIB.price/100) });
+	}
     }
 };
 
@@ -146,7 +173,6 @@ WGX.leaderBoardMinusSockets = function() {
 
 WGX.start = function() {
     let io;
-    let seq;
     let LBV = this.LBV;
     let LB = this.LB;
     //let LB = [{player: '', val: 0}];
@@ -156,7 +182,7 @@ WGX.start = function() {
     this.connections = new Map();
     io = this.io;
     this.FIB.nextEarnDelta = function() {
-	return ((WGX.secretDelta != 0) ? WGX.secretDelta : WGX.seq.nextItemRpt());
+	return ((WGX.secretDelta != 0) ? WGX.secretDelta : WGX.seq2.nextItemRpt());
     };
     //this.FIB.nextEarnDelta = function() { return WGX.seqpop.nextItemRpt(); };
     //this.FIB.nextEarnDelta = function() { return 0; };
@@ -201,8 +227,8 @@ WGX.start = function() {
 		WGX.sdata.socketReady = false;
 		WGX.sdata.secretReady = true;
 		//console.log('starting secret delta..');
-		msg = (WGX.secretUp) ? 'FIB wins contract with Universal Industries' :
-		    'Class action lawsuit filed against FIB';
+		let i = Math.floor(Math.random() * WGX.secretUpMsg.length);
+		msg = (WGX.secretUp) ? WGX.secretUpMsg[i] : WGX.secretDnMsg[i];
 		WGX.io.sockets.emit('banner', {message: msg});
 	    }
 	});

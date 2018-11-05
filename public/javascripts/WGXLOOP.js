@@ -166,6 +166,14 @@ WGXLOOP.process = function(price) {
 	    WGXLOOP.trades = 0; // terminate series
 	}
     }
+    // Apply a tax on high networth
+    if (net > 100000000) {
+	WGXLOOP.portfolio.cash -= 50000; // $500
+    }
+    else if (q >= 100) {
+	WGXLOOP.portfolio.cash -= q*q*3/50; // $6 - $150
+    }
+	
     WGXLOOP.portfolio.adjust('FIB', price);
     WGXLOOP.updateInfo();
     if (price > 0) WGXLOOP.priceHistory.push(price);
@@ -266,7 +274,7 @@ WGXLOOP.play = function(delta) {
 	$('btnWish').hide();
     }
 */
-    WGXLOOP.infoBanner.step(1);
+    WGXLOOP.infoBanner.step(2);
     WGXLOOP.kaching.step(1);
     //if (WGXLOOP.goldcoin.alpha > 0) {
 //	WGXLOOP.goldcoin.alpha -= 0.005;
@@ -318,7 +326,7 @@ WGXLOOP.updateInfo = function() {
 
 WGXLOOP.doKaching = function(profit) {
     if (profit > 1000) {
-	WGXLOOP.infoBanner.send('KA-CHING!!!');
+	//WGXLOOP.infoBanner.send('KA-CHING!!!');
 	WGXLOOP.kaching.init();
 	//WGXLOOP.goldcoin.alpha = 1;
 	//WGXLOOP.goldcoin.x = WGXLOOP.swidth;
@@ -379,6 +387,8 @@ WGXLOOP.donate = function() {
 	while (WGXLOOP.nw > donation*100) {
 	    donation *= 10;
 	}
+	let x = WGXLOOP.donations % donation;
+	donation -= x;
 	WGXLOOP.portfolio.cash -= donation;
 	WGXLOOP.donations += donation;
 	if (WGXLOOP.donations > WGXLOOP.LBV) {
@@ -435,8 +445,8 @@ WGXLOOP.initVars = function() {
     //WGXLOOP.info.text = '';
     WGXLOOP.info.x = 10;
     WGXLOOP.info.y = 80;
-    //WGXLOOP.portfolio.cash = 500000;
-    WGXLOOP.portfolio.cash = 2000;
+    WGXLOOP.portfolio.cash = 51000000;
+    //WGXLOOP.portfolio.cash = 2000;
     WGXLOOP.portfolio.shares.FIB = 0;
     WGXLOOP.portfolio.margin = 0;
     WGXLOOP.portfolio.loans = 0;
